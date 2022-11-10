@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import telran.java2022.accounting.dao.UserAccountRepository;
+import telran.java2022.accounting.model.UserAccount;
 
 @Component
 @RequiredArgsConstructor
@@ -34,7 +35,11 @@ public class AuthenticationFilter implements Filter {
 				return;
 			}
 			String[] credentials = getCredentialsFromToken(token);
-			// TODO authentication
+			UserAccount userAccount = userAccountRepository.findById(credentials[0]).orElse(null);
+			if(userAccount == null || !userAccount.getPassword().equals(credentials[1])) {
+				response.sendError(401, "login or password is invalid");
+				return;
+			}
 		}
 		chain.doFilter(request, response);
 	}
