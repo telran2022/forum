@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import telran.java2022.accounting.dao.UserAccountRepository;
 import telran.java2022.accounting.model.UserAccount;
+import telran.java2022.security.context.SecurityContext;
+import telran.java2022.security.context.User;
 
 @Component
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ import telran.java2022.accounting.model.UserAccount;
 public class AuthenticationFilter implements Filter {
 	
 	final UserAccountRepository userAccountRepository;
+	final SecurityContext context;
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
@@ -52,7 +55,12 @@ public class AuthenticationFilter implements Filter {
 				return;
 			}
 			request = new WrappedRequest(request, userAccount.getLogin());
-			
+			User user = User.builder()
+								.userName(userAccount.getLogin())
+								.password(userAccount.getPassword())
+								.roles(userAccount.getRoles())
+								.build();
+			context.addUser(user);
 		}
 		chain.doFilter(request, response);
 	}
